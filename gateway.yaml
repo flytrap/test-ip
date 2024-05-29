@@ -1,0 +1,35 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: Gateway
+metadata:
+  name: test-gateway
+spec:
+  selector:
+    istio: ingressgateway # use Istio default gateway implementation
+  servers:
+  - port:
+      number: 80
+      name: http
+      protocol: HTTP
+    hosts:
+    - test.lbjy.com
+
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: test-vs
+spec:
+  hosts:
+  - test.lbjy.com
+  gateways:
+  - test-gateway
+  http:
+  - name: front
+    match:
+    - uri:
+        prefix: /
+    route:
+    - destination:
+        host: test-ip
+        port:
+          number: 8080
