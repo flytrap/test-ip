@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-ip
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: test-ip
+  template:
+    metadata:
+      labels:
+        app: test-ip
+    spec:
+      containers:
+      - name: test-ip
+        image: test-ip:latest
+        ports:
+        - containerPort: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: test-ip
+spec:
+  ports:
+  - port: 8080
+    targetPort: 8080
+  selector:
+    app: test-ip

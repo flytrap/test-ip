@@ -11,7 +11,7 @@ spec:
       name: http
       protocol: HTTP
     hosts:
-    - test.lbjy.com
+    - ok.com
 
 ---
 apiVersion: networking.istio.io/v1alpha3
@@ -20,7 +20,7 @@ metadata:
   name: test-vs
 spec:
   hosts:
-  - test.lbjy.com
+  - ok.com
   gateways:
   - test-gateway
   http:

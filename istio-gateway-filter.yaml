@@ -1,0 +1,34 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: bypass-request-id-protection
+  namespace: istio-system
+spec:
+  workloadSelector:
+    labels:
+      istio: ingressgateway
+  configPatches:
+    - applyTo: HTTP_FILTER
+      match:
+        context: GATEWAY
+        listener:
+          filterChain:
+            filter:
+              name: "envoy.filters.network.http_connection_manager"
+      patch:
+        operation: INSERT_BEFORE
+        value:
+          name: envoy.filters.http.lua
+          typed_config:
+            "@type": "type.googleapis.com/envoy.extensions.filters.http.lua.v3.Lua"
+            inline_code: |
+              function envoy_on_request(request_handle)
+                -- 从 Nginx 的马甲头里捞出最终确定的 Request ID
+                local nginx_id = request_handle:headers():get("X-Orig-Request-Id")
+                if nginx_id then
+                  -- 强行灌入标准头，击穿 Envoy 的默认随机 UUID 逻辑
+                  request_handle:headers():replace("X-Request-Id", nginx_id)
+                  -- 顺手把马甲头删掉，不给后端业务服务添乱
+                  request_handle:headers():remove("X-Orig-Request-Id")
+                end
+              end
